@@ -34,7 +34,7 @@ Tested on PS5 firmware **13.60** with a homebrew game-folder setup. Other config
 
 1. Download and extract the version 1.1 game archive above.
 2. Copy the complete `FWRG00001` folder to `/data/homebrew/FWRG00001`, or `homebrew/FWRG00001` on a supported USB drive.
-3. Activate your usual jailbreak, kstuff and game-folder loader setup. Scan for games if needed.
+3. Activate your usual jailbreak, kstuff and **ShadowMount+** setup. Scan for games if needed.
 4. Launch **Forgotten Warrior Remastered** from the PS5 game library.
 
 Keep `FWRG00001` directly inside the scanned homebrew directory; avoid an extra parent folder when scan depth is 1. The title includes `eboot.bin`, `assets`, `sce_module` and `sce_sys`.
