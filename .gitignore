@@ -1,0 +1,9 @@
+host/
+obj/
+FWRG00001/
+tools/
+*.o
+*.elf
+*.exe
+*.log
+__pycache__/
