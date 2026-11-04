@@ -7,3 +7,6 @@ tools/
 *.exe
 *.log
 __pycache__/
+downloads/
+*.bak
+*.mappp
