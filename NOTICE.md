@@ -4,7 +4,7 @@ Port and presentation: **Youss Riaal**.
 
 Forgotten Warrior is the original game. The supplied J2ME edition identifies wait4u and Amusingware. Original game artwork, maps, audio and game logic, including the converted `src/game.hpp`, retain their original ownership. This project does not claim ownership of that content or grant a new license for it.
 
-No single blanket license is asserted over this mixed-content distribution. Preserve the licenses and notices attached to each component.
+Original PS5 port contributions are licensed under GPL-3.0-only, within the scope defined in [COPYRIGHT.md](COPYRIGHT.md). This grant does not relicense the original game or third-party components. Preserve their respective licenses and notices.
 
 - Native application tooling and clean-room companion runtime: BlackBearReloaded native-app boilerplate tooling vendored from [darkxex/ProsperoStore](https://github.com/darkxex/ProsperoStore/tree/22d5a44a053b4dad4f3a5867fe39d262a80a1b8c/tooling), GPL-3.0. Source, runtime manifests and license are under `vendor/ps5-native-tool`. The bundled `runtime/libc.prx` is the generated clean-room companion runtime.
 - PS5 compatibility layer: [kvaps/syobon-action-ps5](https://github.com/kvaps/syobon-action-ps5), GPL-3.0; see `vendor/ps5_compat.cpp` and the GPL text in `vendor/ps5-native-tool/LICENSE`.

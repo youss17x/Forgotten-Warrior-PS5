@@ -1,3 +1,9 @@
+/*
+ * PS5 port contributions and enhancements: Youss Riaal, 2026.
+ * SPDX-License-Identifier: GPL-3.0-only
+ * Applies to original port contributions only; see COPYRIGHT.md and NOTICE.md.
+ * Preserve existing upstream notices. No relicensing of original game content.
+ */
 #pragma once
 #include <cstdint>
 #include <vector>

@@ -1,3 +1,6 @@
+# PS5 port contributions and enhancements: Youss Riaal, 2026.
+# SPDX-License-Identifier: GPL-3.0-only
+# Applies to original contributions only; see COPYRIGHT.md and NOTICE.md.
 from pathlib import Path
 import subprocess,sys,shutil,json,os
 from concurrent.futures import ThreadPoolExecutor

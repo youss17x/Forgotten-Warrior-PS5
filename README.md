@@ -6,12 +6,12 @@
 
 A native C++ port of the classic J2ME game Forgotten Warrior for homebrew-enabled PlayStation 5 consoles, packaged as a native PS5 game folder.
 
-[**Download v1.1**](https://github.com/youss17x/Forgotten-Warrior-PS5/releases/tag/v1.1) · [Game ZIP](https://github.com/youss17x/Forgotten-Warrior-PS5/releases/download/v1.1/ForgottenWarrior-PS5-v1.1.zip) · [Source archive](https://github.com/youss17x/Forgotten-Warrior-PS5/releases/download/v1.1/ForgottenWarrior-PS5-source-v1.1.zip) · [Build instructions](BUILD.txt) · [Credits and licenses](NOTICE.md)
+[**Download v1.1**](https://github.com/youss17x/Forgotten-Warrior-PS5/releases/tag/v1.1) Â· [Game ZIP](https://github.com/youss17x/Forgotten-Warrior-PS5/releases/download/v1.1/ForgottenWarrior-PS5-v1.1.zip) Â· [Source archive](https://github.com/youss17x/Forgotten-Warrior-PS5/releases/download/v1.1/ForgottenWarrior-PS5-source-v1.1.zip) Â· [Build instructions](BUILD.txt) Â· [Credits and licenses](NOTICE.md)
 
 ## Features
 
 - Native PS5 executable with no Java virtual machine or game payload launcher required.
-- 1920 × 1080 output with enhanced pixel scaling and the original 3:4 aspect ratio preserved.
+- 1920 Ã— 1080 output with enhanced pixel scaling and the original 3:4 aspect ratio preserved.
 - DualSense controls and in-game controller help.
 - Corrected game speed and movement while jumping.
 - Custom Youss Riaal title credit, positioned between menu buttons.
@@ -44,14 +44,14 @@ Keep `FWRG00001` directly inside the scanned homebrew directory; avoid an extra 
 | Button | During gameplay | In menus |
 | --- | --- | --- |
 | D-pad / left stick | Move; Up climbs or enters caves | Navigate |
-| Cross (×) | Jump | Confirm |
-| Square (□) | Attack | — |
-| Circle (○) | HP potion | Back |
-| Triangle (△) | MP potion | — |
-| R1 | Special attack | — |
-| Options | Open options | — |
-| Touchpad | Pause / resume | — |
-| L1 / R2 | Unassigned | — |
+| Cross (Ã—) | Jump | Confirm |
+| Square (â–¡) | Attack | â€” |
+| Circle (â—‹) | HP potion | Back |
+| Triangle (â–³) | MP potion | â€” |
+| R1 | Special attack | â€” |
+| Options | Open options | â€” |
+| Touchpad | Pause / resume | â€” |
+| L1 / R2 | Unassigned | â€” |
 
 ## Saves and troubleshooting
 
@@ -67,3 +67,6 @@ Version 1.1 was checked on the console for launch, gameplay, controls, options, 
 
 This is an unofficial fan port. Original game content belongs to its respective owners. See [NOTICE.md](NOTICE.md) for attribution and component licensing.
 
+## License and attribution
+
+**PS5 port and enhancements by Youss Riaal (2026).** Original port contributions are licensed under **GPL-3.0-only**. Redistribution of covered code must preserve existing copyright and license notices, identify modifications, and meet GPL source-distribution requirements. See [LICENSE](LICENSE) and [COPYRIGHT.md](COPYRIGHT.md) for the exact scope. Original game content and third-party components retain their own rights and licenses, documented in [NOTICE.md](NOTICE.md).
