@@ -15,7 +15,7 @@
 
 inline std::string user_data_dir(){return save_dir+"/data";}
 
-inline bool file_exists(const std::string&p){struct stat st;return stat(p.c_str(),&st)==0&&S_ISREG(st.st_mode);}
+inline bool file_exists(const std::string&p){FILE*f=fopen(p.c_str(),"rb");if(!f)return false;fclose(f);return true;}
 
 inline int missing_game_files(const std::string&dir,std::string*first=nullptr){
     int missing=0;
@@ -63,9 +63,17 @@ inline int extract_game_jar(const std::string&jar,const std::string&out_dir){
 }
 
 inline std::vector<std::string> find_jars(const std::string&dir){
-    std::vector<std::string>jars;DIR*d=opendir(dir.c_str());if(!d)return jars;
-    while(auto*e=readdir(d)){std::string n=e->d_name;if(n.size()>4){std::string ext=n.substr(n.size()-4);for(auto&c:ext)c=(char)tolower((unsigned char)c);if(ext==".jar")jars.push_back(dir+"/"+n);}}
-    closedir(d);std::sort(jars.begin(),jars.end());return jars;
+    std::vector<std::string>jars;
+    if(DIR*d=opendir(dir.c_str())){
+        while(auto*e=readdir(d)){std::string n=e->d_name;if(n.size()>4){std::string ext=n.substr(n.size()-4);for(auto&c:ext)if(c>='A'&&c<='Z')c=char(c-'A'+'a');if(ext==".jar")jars.push_back(dir+"/"+n);}}
+        closedir(d);std::sort(jars.begin(),jars.end());
+        fprintf(stdout,"Found %d .jar file(s) in %s\n",(int)jars.size(),dir.c_str());
+    }else fprintf(stdout,"Cannot list %s; trying fixed .jar names\n",dir.c_str());
+    // Fixed names, in case listing the folder is not available on the console.
+    for(const char*n:{"game.jar","Game.jar","ForgottenWarrior.jar","Forgotten-Warrior.jar","Forgotten Warrior.jar","Forgotten-Warrior_J2ME_EN_v291.jar"}){
+        const std::string path=dir+"/"+n;if(std::find(jars.begin(),jars.end(),path)==jars.end()&&file_exists(path))jars.push_back(path);
+    }
+    return jars;
 }
 
 // Points asset_dir at the user's data folder. Returns the number of files still missing.
@@ -80,7 +88,7 @@ inline int prepare_user_data(std::string*first_missing=nullptr){
     int missing=missing_game_files(dir);
     if(missing){
         for(const auto&jar:find_jars(save_dir)){
-            int n=extract_game_jar(jar,dir);
+            int n=extract_game_jar(jar,dir);if(!n)fprintf(stdout,"Could not extract game files from %s\n",jar.c_str());
             fprintf(stdout,"Extracted %d game files from %s\n",n,jar.c_str());
             missing=missing_game_files(dir);if(!missing)break;
         }
@@ -101,6 +109,7 @@ inline void draw_setup_screen(SDL_Renderer*r,int missing,const std::string&first
         "",
         "Option 1: copy the game's .jar file to",
         "          "+save_dir+"/",
+        "          (any name ending in .jar; if it is not found, rename it game.jar)",
         "          The game extracts the files it needs automatically.",
         "",
         "Option 2: extract the .jar yourself and copy its files into",
