@@ -1,12 +1,12 @@
 # Forgotten Warrior PS5
 
-<p align="center"><img src="icon0.png" alt="Forgotten Warrior Remastered cover" width="360"></p>
+<p align="center"><img src="sce_sys/icon0.png" alt="Forgotten Warrior Remastered cover" width="360"></p>
 
 <p align="center"><strong>Remastered by Youss Riaal</strong></p>
 
 A native C++ port of the classic J2ME game Forgotten Warrior for homebrew-enabled PlayStation 5 consoles, packaged as a native PS5 game folder.
 
-[**Download v1.1.1**](https://github.com/youss17x/Forgotten-Warrior-PS5/releases/tag/v1.1.1) · [Game ZIP](https://github.com/youss17x/Forgotten-Warrior-PS5/releases/download/v1.1.1/ForgottenWarrior-PS5-v1.1.1.zip) · [Source archive](https://github.com/youss17x/Forgotten-Warrior-PS5/releases/download/v1.1.1/ForgottenWarrior-PS5-source-v1.1.1.zip) · [Build instructions](BUILD.txt) · [Credits and licenses](NOTICE.md)
+[**Download v1.1.2**](https://github.com/youss17x/Forgotten-Warrior-PS5/releases/tag/v1.1.2) · [Game ZIP](https://github.com/youss17x/Forgotten-Warrior-PS5/releases/download/v1.1.2/FWRG00001-v1.1.2.zip) · [Source archive](https://github.com/youss17x/Forgotten-Warrior-PS5/archive/refs/tags/v1.1.2.zip) · [Build instructions](BUILD.txt) · [Credits and licenses](NOTICE.md)
 
 ## Features
 
@@ -32,12 +32,12 @@ A native C++ port of the classic J2ME game Forgotten Warrior for homebrew-enable
 
 Tested on PS5 firmware **13.60** with a homebrew game-folder setup. Other configurations have not been verified.
 
-1. Download and extract the version 1.1.1 game archive above.
+1. Download and extract the version 1.1.2 game archive above. It contains only the `FWRG00001` folder.
 2. Copy the complete `FWRG00001` folder to `/data/homebrew/FWRG00001`, or `homebrew/FWRG00001` on a supported USB drive.
 3. Activate your usual jailbreak, kstuff and **ShadowMount+** setup. Scan for games if needed.
 4. Launch **Forgotten Warrior Remastered** from the PS5 game library.
 
-Keep `FWRG00001` directly inside the scanned homebrew directory; avoid an extra parent folder when scan depth is 1. The title includes `eboot.bin`, `assets`, `sce_module` and `sce_sys`.
+Keep `FWRG00001` directly inside the scanned homebrew directory; avoid an extra parent folder when scan depth is 1. The title includes `eboot.bin`, `assets`, `sce_module` and `sce_sys`, plus the license and notice files.
 
 ## Controls
 

@@ -1,0 +1,20 @@
+{
+  "titleId": "FWRG00001",
+  "conceptId": "09991",
+  "contentId": "IV9999-FWRG00001_00-FORGOTTENWARRIOR",
+  "contentVersion": "01.001.002",
+  "masterVersion": "01.00",
+  "applicationCategoryType": 0,
+  "contentBadgeType": 1,
+  "applicationDrmType": "free",
+  "downloadDataSize": 256,
+  "localizedParameters": {
+    "defaultLanguage": "en-US",
+    "en-US": {
+      "titleName": "Forgotten Warrior Remastered"
+    }
+  },
+  "kernel": {
+    "flexibleMemorySize": 268435456
+  }
+}

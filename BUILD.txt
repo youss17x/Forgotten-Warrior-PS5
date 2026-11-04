@@ -1,6 +1,7 @@
 Windows build: Python 3, LLVM/MinGW 23, PS5 Payload SDK 0.45, pacbrew 0.37 homebrew sysroot.
 Set LLVM_BIN, PS5_PAYLOAD_SDK, PS5_HBROOT. Set FW_TOOLS to a directory containing zlib-1.3.1 source.
-Run python build-title.py. Output: FWRG00001/.
+Run python build-title.py. Output: FWRG00001/. Add --zip to also create FWRG00001-v<version>.zip for a release.
+The title ID and contentVersion come from sce_sys/param.json; raise contentVersion before every release.
 Host native conversion tools and runtime source/manifests: vendor/ps5-native-tool/.
 Clean-room runtime regeneration instructions are in the linked boilerplate project; runtime/libc.prx matches its generated companion.
 The original game assets remain the property of their owners.
