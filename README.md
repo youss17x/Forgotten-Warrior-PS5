@@ -1,10 +1,12 @@
 # Forgotten Warrior PS5
 
-**Remastered by Youss Riaal**
+<p align="center"><img src="icon0.png" alt="Forgotten Warrior Remastered cover" width="360"></p>
+
+<p align="center"><strong>Remastered by Youss Riaal</strong></p>
 
 A native C++ port of the classic J2ME game Forgotten Warrior for homebrew-enabled PlayStation 5 consoles, packaged as a ShadowMount+ game folder.
 
-[Download version 1.1](downloads/ForgottenWarrior-ShadowMount-1.1.zip) · [Source archive](downloads/ForgottenWarrior-ShadowMount-source-1.1.zip) · [Build instructions](BUILD.txt) · [Credits and licenses](NOTICE.md)
+[**Download v1.1**](https://github.com/youss17x/Forgotten-Warrior-PS5/releases/tag/v1.1) · [Game ZIP](https://github.com/youss17x/Forgotten-Warrior-PS5/releases/download/v1.1/ForgottenWarrior-ShadowMount-1.1.zip) · [Source archive](https://github.com/youss17x/Forgotten-Warrior-PS5/releases/download/v1.1/ForgottenWarrior-ShadowMount-source-1.1.zip) · [Build instructions](BUILD.txt) · [Credits and licenses](NOTICE.md)
 
 ## Features
 
@@ -16,7 +18,15 @@ A native C++ port of the classic J2ME game Forgotten Warrior for homebrew-enable
 - Persistent saves and clean Quit / relaunch support.
 - Original sound effects; no added looping background music.
 
+## Screenshots
+
+### Main menu
+
 ![Main menu](docs/images/menu.png)
+
+### Gameplay
+
+![Gameplay with the original portrait aspect ratio preserved](docs/images/gameplay.png)
 
 ## Installation
 
@@ -56,3 +66,4 @@ Black bars at the sides are intentional: the original portrait presentation is p
 Version 1.1 was checked on the console for launch, gameplay, controls, options, HP potion, Quit and relaunch. Host checks covered stage rendering, timing and movement. Cold-boot behavior was not independently tested.
 
 This is an unofficial fan port. Original game content belongs to its respective owners. See [NOTICE.md](NOTICE.md) for attribution and component licensing.
+
