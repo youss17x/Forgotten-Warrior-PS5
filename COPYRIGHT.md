@@ -13,6 +13,8 @@ This grant covers the original PS5 integration and enhancements in:
 - `src/controller_help.hpp`: controller glyphs and help presentation.
 - `src/pixel_scaler.hpp`: pixel scaling implementation.
 - `src/credit_design.hpp`: credit presentation code.
+- `src/user_data.hpp`: loading the original game files from the user's own copy, `.jar` extraction and the setup screen.
+- `src/asset_manifest.hpp`: the list of file names the game expects (names only, no game content).
 - `native_shims.cpp` and `build-title.py`: original integration and build contributions.
 
 The grant applies to original contributions in these files, not any pre-existing material incorporated into them. Existing copyright notices and applicable upstream license terms remain in force.
@@ -31,4 +33,4 @@ Suggested attribution: **PS5 port and enhancements by Youss Riaal.** Credit the 
 
 The presence of a GPL license at the repository root does not mean every file or the complete bundled game is available under GPL. The source code headers and this scope document identify the grant. For legal details, the license text governs the material to which it applies.
 
-This notice was added after the v1.1 release. The v1.1 release archives and tag have not been rewritten; release v1.1.1 and later include this notice and the LICENSE file.
+This notice was added after the v1.1 release. The v1.1 release archives and tag have not been rewritten; release v1.1.1 and later include this notice and the LICENSE file. From v1.2.0, releases contain no original game files; users supply them from their own copy of the game.

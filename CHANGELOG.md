@@ -1,3 +1,10 @@
+# Version 1.2.0
+
+- The release no longer contains any original game files (artwork, maps, audio).
+- On first launch the game extracts the files it needs from the user's own `.jar` placed in `/data/ForgottenWarrior/`, or reads them from `/data/ForgottenWarrior/data/`.
+- A setup screen explains what to add when files are missing; press Cross to check again.
+- The bundled soundfont (TinySoundFont example, not game content) stays in the app folder.
+
 # Version 1.1.2
 
 - Packaging update for the ProsperoStore catalog; the game executable and assets are unchanged from 1.1.

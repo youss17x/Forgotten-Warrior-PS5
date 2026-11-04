@@ -6,7 +6,9 @@
 
 A native C++ port of the classic J2ME game Forgotten Warrior for homebrew-enabled PlayStation 5 consoles, packaged as a native PS5 game folder.
 
-[**Download v1.1.2**](https://github.com/youss17x/Forgotten-Warrior-PS5/releases/tag/v1.1.2) · [Game ZIP](https://github.com/youss17x/Forgotten-Warrior-PS5/releases/download/v1.1.2/FWRG00001-v1.1.2.zip) · [Source archive](https://github.com/youss17x/Forgotten-Warrior-PS5/archive/refs/tags/v1.1.2.zip) · [Build instructions](BUILD.txt) · [Credits and licenses](NOTICE.md)
+> **You need your own copy of the original game.** This port does not include the original game's artwork, maps or audio. On first launch it reads them from your own copy of the original J2ME `.jar` (see [Add the original game files](#add-the-original-game-files)).
+
+[**Download v1.2.0**](https://github.com/youss17x/Forgotten-Warrior-PS5/releases/tag/v1.2.0) · [Game ZIP](https://github.com/youss17x/Forgotten-Warrior-PS5/releases/download/v1.2.0/FWRG00001-v1.2.0.zip) · [Source archive](https://github.com/youss17x/Forgotten-Warrior-PS5/archive/refs/tags/v1.2.0.zip) · [Build instructions](BUILD.txt) · [Credits and licenses](NOTICE.md)
 
 ## Features
 
@@ -32,12 +34,22 @@ A native C++ port of the classic J2ME game Forgotten Warrior for homebrew-enable
 
 Tested on PS5 firmware **13.60** with a homebrew game-folder setup. Other configurations have not been verified.
 
-1. Download and extract the version 1.1.2 game archive above. It contains only the `FWRG00001` folder.
+1. Download and extract the version 1.2.0 game archive above. It contains only the `FWRG00001` folder.
 2. Copy the complete `FWRG00001` folder to `/data/homebrew/FWRG00001`, or `homebrew/FWRG00001` on a supported USB drive.
 3. Activate your usual jailbreak, kstuff and **ShadowMount+** setup. Scan for games if needed.
-4. Launch **Forgotten Warrior Remastered** from the PS5 game library.
+4. Add the original game files as described below.
+5. Launch **Forgotten Warrior Remastered** from the PS5 game library.
 
 Keep `FWRG00001` directly inside the scanned homebrew directory; avoid an extra parent folder when scan depth is 1. The title includes `eboot.bin`, `assets`, `sce_module` and `sce_sys`, plus the license and notice files.
+
+### Add the original game files
+
+The game needs the artwork, maps and audio from your own copy of the original J2ME game. Use either option:
+
+- **Option 1 (easiest):** copy the game's `.jar` file into `/data/ForgottenWarrior/`. On launch the game extracts the files it needs into `/data/ForgottenWarrior/data/`. You can delete the `.jar` afterwards.
+- **Option 2:** extract the `.jar` yourself (it is a ZIP archive) and copy its files into `/data/ForgottenWarrior/data/`.
+
+If files are missing, the game shows a setup screen with these instructions and the number of missing files. Add the files over FTP, then press **Cross** to check again.
 
 ## Controls
 
