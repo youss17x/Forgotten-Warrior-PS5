@@ -31,4 +31,4 @@ Suggested attribution: **PS5 port and enhancements by Youss Riaal.** Credit the 
 
 The presence of a GPL license at the repository root does not mean every file or the complete bundled game is available under GPL. The source code headers and this scope document identify the grant. For legal details, the license text governs the material to which it applies.
 
-This notice is added after the v1.1 release. The existing v1.1 release archives and tag have not been rewritten; the notice accompanies the current repository source and can be included in future releases.
+This notice was added after the v1.1 release. The v1.1 release archives and tag have not been rewritten; release v1.1.1 and later include this notice and the LICENSE file.
