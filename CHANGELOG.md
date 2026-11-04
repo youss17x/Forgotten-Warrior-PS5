@@ -1,3 +1,9 @@
+# Version 1.1.1
+
+- Packaging and documentation update; the game executable and assets are unchanged from 1.1.
+- Release archives now include LICENSE (GPL-3.0), COPYRIGHT.md and NOTICE.md.
+- Fixed broken characters in the README.
+
 # Version 1.1
 
 - PS5 native game-folder release.
