@@ -38,7 +38,16 @@ run(cmd)
 run([tool,'link','--in',pie,'--out',base/'eboot.elf','--stub-dir',sdk/'target/lib','--module-sdk','0x02000009','--companion-sdk','0x08050001','--file-name','eboot.elf'])
 title=base/'FWRG00001';(title/'sce_sys').mkdir(parents=True,exist_ok=True);(title/'sce_module').mkdir(exist_ok=True)
 run([tool,'self','--sign','--in',base/'eboot.elf','--out',title/'eboot.bin','--magic','0x1D3D154F'])
-shutil.copyfile(base/'icon0.png',title/'sce_sys/icon0.png');shutil.copytree(base/'assets',title/'assets',dirs_exist_ok=True);shutil.copyfile(base/'runtime/libc.prx',title/'sce_module/libc.prx')
-param={'titleId':'FWRG00001','conceptId':'09991','contentId':'IV9999-FWRG00001_00-FORGOTTENWARRIOR','contentVersion':'01.001.000','masterVersion':'01.00','applicationCategoryType':0,'contentBadgeType':1,'applicationDrmType':'free','downloadDataSize':256,'localizedParameters':{'defaultLanguage':'en-US','en-US':{'titleName':'Forgotten Warrior Remastered'}},'kernel':{'flexibleMemorySize':268435456}}
+shutil.copyfile(base/'sce_sys/icon0.png',title/'sce_sys/icon0.png');shutil.copytree(base/'assets',title/'assets',dirs_exist_ok=True);shutil.copyfile(base/'runtime/libc.prx',title/'sce_module/libc.prx')
+param=json.loads((base/'sce_sys/param.json').read_text())
 (title/'sce_sys/param.json').write_text(json.dumps(param,indent=2)+'\n')
+for doc in ['LICENSE','COPYRIGHT.md','NOTICE.md']:shutil.copyfile(base/doc,title/doc)
+shutil.copyfile(base/'README.md',title/'README.txt')
+if '--zip' in sys.argv:
+ import zipfile
+ out=base/('FWRG00001-v'+'.'.join(str(int(x)) for x in param['contentVersion'].split('.'))+'.zip')
+ with zipfile.ZipFile(out,'w',zipfile.ZIP_DEFLATED) as z:
+  for f in sorted(title.rglob('*')):
+   if f.is_file():z.write(f,f.relative_to(base).as_posix())
+ print('Packaged '+str(out),flush=True)
 print('Built native title folder '+str(title),flush=True)
