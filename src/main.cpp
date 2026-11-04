@@ -7,6 +7,7 @@
 #include "game.hpp"
 #include "pixel_scaler.hpp"
 #include "credit_design.hpp"
+#include "user_data.hpp"
 
 static int key(SDL_Keycode k){
  switch(k){case SDLK_UP:return -1;case SDLK_DOWN:return -2;case SDLK_LEFT:return -3;case SDLK_RIGHT:return -4;case SDLK_RETURN:case SDLK_SPACE:return -5;case SDLK_z:return -6;case SDLK_x:case SDLK_ESCAPE:return -7;case SDLK_c:return 48;case SDLK_a:return 55;case SDLK_s:return 57;case SDLK_BACKSPACE:return -8;default:if(k>=SDLK_0&&k<=SDLK_9)return (int)k;return 0;}
@@ -87,12 +88,12 @@ static void directory(const std::string&p){
 #endif
 }
 int main(int argc,char**argv){
- SDL_SetMainReady();bool test=false;for(int i=1;i<argc;i++){if(!strcmp(argv[i],"--self-test"))test=true;else if(!strcmp(argv[i],"--assets")&&i+1<argc)asset_dir=argv[++i];else if(!strcmp(argv[i],"--save")&&i+1<argc)save_dir=argv[++i];}
+ SDL_SetMainReady();bool test=false,assets_given=false;std::string bundled_dir="assets";for(int i=1;i<argc;i++){if(!strcmp(argv[i],"--self-test"))test=true;else if(!strcmp(argv[i],"--assets")&&i+1<argc){asset_dir=argv[++i];assets_given=true;}else if(!strcmp(argv[i],"--bundled")&&i+1<argc)bundled_dir=argv[++i];else if(!strcmp(argv[i],"--save")&&i+1<argc)save_dir=argv[++i];}
 #ifdef FW_PS5
- asset_dir="/app0/assets";save_dir="/data/ForgottenWarrior";
+ bundled_dir="/app0/assets";save_dir="/data/ForgottenWarrior";assets_given=false;
 #endif
  directory(save_dir);freopen((save_dir+"/native-game.log").c_str(),"a",stdout);freopen((save_dir+"/native-game.log").c_str(),"a",stderr);setvbuf(stdout,nullptr,_IONBF,0);setvbuf(stderr,nullptr,_IONBF,0);
- fprintf(stdout,"Forgotten Warrior native folder 1.1 circle HP potion starting\n");
+ fprintf(stdout,"Forgotten Warrior native folder 1.2 (user-supplied game files) starting\n");
  if(test){SDL_setenv("SDL_VIDEODRIVER","dummy",1);SDL_setenv("SDL_AUDIODRIVER","dummy",1);}
  if(SDL_Init(SDL_INIT_VIDEO|SDL_INIT_GAMECONTROLLER|SDL_INIT_AUDIO|SDL_INIT_TIMER)){fprintf(stderr,"SDL: %s\n",SDL_GetError());return 1;}
  SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY,"1");
@@ -104,7 +105,9 @@ int main(int argc,char**argv){
  SDL_SetTextureScaleMode(texture,SDL_ScaleModeLinear);
  int output_w=0,output_h=0;SDL_GetRendererOutputSize(r,&output_w,&output_h);fprintf(stdout,"Output=%dx%d; game viewport=810x1080; original aspect=3:4; edge-aware 2x + linear scaling\n",output_w,output_h);
  for(int i=0;i<SDL_NumJoysticks();i++)if(SDL_IsGameController(i)){controller=SDL_GameControllerOpen(i);if(controller)break;}
- synth=tsf_load_filename((asset_dir+"/soundfont.sf2").c_str());if(synth){tsf_set_output(synth,TSF_STEREO_INTERLEAVED,44100,0);SDL_AudioSpec want{},have{};want.freq=44100;want.format=AUDIO_F32SYS;want.channels=2;want.samples=1024;want.callback=audio_callback;audio_device=SDL_OpenAudioDevice(nullptr,0,&want,&have,0);if(audio_device)SDL_PauseAudioDevice(audio_device,0);}
+ synth=tsf_load_filename((bundled_dir+"/soundfont.sf2").c_str());if(synth){tsf_set_output(synth,TSF_STEREO_INTERLEAVED,44100,0);SDL_AudioSpec want{},have{};want.freq=44100;want.format=AUDIO_F32SYS;want.channels=2;want.samples=1024;want.callback=audio_callback;audio_device=SDL_OpenAudioDevice(nullptr,0,&want,&have,0);if(audio_device)SDL_PauseAudioDevice(audio_device,0);}
+ if(!assets_given&&!ensure_user_data(r)){fprintf(stdout,"Setup screen closed before game files were added\n");if(audio_device)SDL_CloseAudioDevice(audio_device);SDL_Quit();return 0;}
+ fprintf(stdout,"Game files: %s\n",asset_dir.c_str());
  int result=0;
  try{
  Default app;Display display;GameScreen game(app,display);game.canvas=Image::createImage(240,320).getGraphics();game.gg=game.canvas;

@@ -4,4 +4,4 @@ Run python build-title.py. Output: FWRG00001/. Add --zip to also create FWRG0000
 The title ID and contentVersion come from sce_sys/param.json; raise contentVersion before every release.
 Host native conversion tools and runtime source/manifests: vendor/ps5-native-tool/.
 Clean-room runtime regeneration instructions are in the linked boilerplate project; runtime/libc.prx matches its generated companion.
-The original game assets remain the property of their owners.
+The repository and release contain no original game assets; they remain the property of their owners. For a host self-test, pass --assets <folder with your own extracted game files>.
