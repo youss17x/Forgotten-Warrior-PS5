@@ -7,13 +7,35 @@
 #include "game.hpp"
 #include "pixel_scaler.hpp"
 #include "credit_design.hpp"
+#include "side_background.hpp"
+#include "combat_feedback.hpp"
 #include "user_data.hpp"
 
 static int key(SDL_Keycode k){
- switch(k){case SDLK_UP:return -1;case SDLK_DOWN:return -2;case SDLK_LEFT:return -3;case SDLK_RIGHT:return -4;case SDLK_RETURN:case SDLK_SPACE:return -5;case SDLK_z:return -6;case SDLK_x:case SDLK_ESCAPE:return -7;case SDLK_c:return 48;case SDLK_a:return 55;case SDLK_s:return 57;case SDLK_BACKSPACE:return -8;default:if(k>=SDLK_0&&k<=SDLK_9)return (int)k;return 0;}
+ switch(k){case SDLK_F1:return 99;case SDLK_UP:return -1;case SDLK_DOWN:return -2;case SDLK_LEFT:return -3;case SDLK_RIGHT:return -4;case SDLK_RETURN:case SDLK_SPACE:return -5;case SDLK_z:return -6;case SDLK_x:case SDLK_ESCAPE:return -7;case SDLK_c:return 48;case SDLK_a:return 55;case SDLK_s:return 57;case SDLK_BACKSPACE:return -8;default:if(k>=SDLK_0&&k<=SDLK_9)return (int)k;return 0;}
 }
 static int pad(Uint8 b,bool gameplay){switch(b){case SDL_CONTROLLER_BUTTON_DPAD_UP:return -1;case SDL_CONTROLLER_BUTTON_DPAD_DOWN:return -2;case SDL_CONTROLLER_BUTTON_DPAD_LEFT:return -3;case SDL_CONTROLLER_BUTTON_DPAD_RIGHT:return -4;case SDL_CONTROLLER_BUTTON_A:return gameplay?-1:-5;case SDL_CONTROLLER_BUTTON_B:return -8;case SDL_CONTROLLER_BUTTON_X:return -5;case SDL_CONTROLLER_BUTTON_Y:return 57;case SDL_CONTROLLER_BUTTON_LEFTSHOULDER:return -6;case SDL_CONTROLLER_BUTTON_RIGHTSHOULDER:return 48;case SDL_CONTROLLER_BUTTON_START:return -7;case SDL_CONTROLLER_BUTTON_BACK:return -8;default:return 0;}}
+struct JumpMomentum {int direction=0,remaining=0,stage=0,chapter=0;};
+static JumpMomentum jump_momentum;
+struct JumpBuffer {Uint64 until=0;int stage=0,chapter=0;};
+static JumpBuffer jump_buffer;
+static bool jump_input_active(const GameScreen&g){return g.screen==10&&g.game_on&&g.state==1&&g.auto_move==0&&g.h_dem!=99&&g.p_mode==2;}
+static void consume_jump_buffer(GameScreen&g,Uint64 now=SDL_GetTicks64()){
+ if(!jump_buffer.until)return;
+ if(!jump_input_active(g)||g.stage!=jump_buffer.stage||g.chap!=jump_buffer.chapter||now>jump_buffer.until){jump_buffer={};return;}
+ if(g.h_mo<3&&g.y_gap==0&&(g.h_dir==0||g.h_dir==2||g.h_dir==4)){
+  jump_buffer={};g.keyPressed(-1);
+ }
+}
+static void tick_with_buffer(GameScreen&g){consume_jump_buffer(g);tick_with_feedback(g);consume_jump_buffer(g);}
+
 static void pressed(GameScreen&g,int k){
+ if(k==99||k==-6||k==-7||k==-8){jump_momentum={};jump_buffer={};}
+ if(k==-1&&jump_input_active(g)&&g.h_mo>=6&&g.h_mo<=9){
+  jump_buffer={SDL_GetTicks64()+120,g.stage,g.chap};return;
+ }
+ if(k==-1)jump_buffer={};
+ if(k==99)return;
  if(k==-6&&g.screen==10&&(g.state==1||g.state==20)){
   if(g.state==20){g.state=1;g.game_on=true;g.p_mode=100;g.repaint();}
   else{g.game_on=false;g.state=20;g.gg.setColor(0);g.gg.fillRect(0,293,240,30);g.draw_img(String("m_resume"),g.btn_r_x,g.btn_y,24);g.draw_img(String("pause"),120,200,3);g.repaint();}
@@ -27,7 +49,7 @@ static void pressed(GameScreen&g,int k){
  if(k==-5&&g.screen==123)k=-6;g.keyPressed(k);
 }
 static int controller_key(Uint8 button,bool gameplay,bool native_ps5){
- if(button==SDL_CONTROLLER_BUTTON_LEFTSHOULDER)return 0;
+ if(button==SDL_CONTROLLER_BUTTON_LEFTSHOULDER)return 99;
  if(button==SDL_CONTROLLER_BUTTON_B)return gameplay?55:-8;
  // Pacbrew 0.37 maps physical Options (mask 0x8/raw 4) to BACK,
  // and the touchpad (mask 0x100000/raw 6) to START.
@@ -47,9 +69,18 @@ static int frame_delay(const GameScreen&g){
  return 33;
 }
 static void apply_held_horizontal(GameScreen&g,int direction){
- if(g.screen!=10||!g.game_on||g.state!=1||g.auto_move!=0)return;
- if(direction)g.keyPressed(direction<0?-3:-4);
- else{g.tmp_move=0;if(g.h_dir==2||g.h_dir==4)g.h_dir=0;}
+ auto&m=jump_momentum;
+ if(g.screen!=10||!g.game_on||g.state!=1||g.auto_move!=0){m={};return;}
+ if(m.stage!=g.stage||m.chapter!=g.chap){m={};m.stage=g.stage;m.chapter=g.chap;}
+ const bool airborne=g.h_mo>=6&&g.h_mo<=9;
+ if(direction){m.direction=direction;m.remaining=0;g.keyPressed(direction<0?-3:-4);return;}
+ // Preserve the existing jump arc, then coast for at most two ground updates.
+ // Walking releases still stop immediately; new directional input takes priority.
+ if(airborne&&m.direction){m.remaining=2;g.keyPressed(m.direction<0?-3:-4);return;}
+ if(m.remaining>0&&(g.h_mo<3)&&(g.h_dir==0||g.h_dir==2||g.h_dir==4)){
+  g.keyPressed(m.direction<0?-3:-4);--m.remaining;return;
+ }
+ m.direction=0;m.remaining=0;g.tmp_move=0;if(g.h_dir==2||g.h_dir==4)g.h_dir=0;
 }
 static int held_horizontal(){
  const Uint8*keys=SDL_GetKeyboardState(nullptr);bool left=keys[SDL_SCANCODE_LEFT],right=keys[SDL_SCANCODE_RIGHT];
@@ -61,6 +92,7 @@ static void present_frame(SDL_Renderer*r,SDL_Texture*t,const GameScreen&g){
  enlarge_pixel_art((const uint32_t*)g.canvas.im.p->pixels,240,320,g.canvas.im.p->pitch/4,enlarged);
  SDL_UpdateTexture(t,nullptr,enlarged.data(),480*4);
  SDL_SetRenderDrawColor(r,0,0,0,255);SDL_RenderClear(r);
+ draw_side_background(r,g);
  const SDL_Rect picture{555,0,810,1080};
  SDL_RenderCopy(r,t,nullptr,&picture);
  if(g.screen==1||g.screen==123||g.screen==2){
@@ -92,20 +124,25 @@ int main(int argc,char**argv){
 #ifdef FW_PS5
  bundled_dir="/app0/assets";save_dir="/data/ForgottenWarrior";assets_given=false;
 #endif
- directory(save_dir);freopen((save_dir+"/native-game.log").c_str(),"a",stdout);freopen((save_dir+"/native-game.log").c_str(),"a",stderr);setvbuf(stdout,nullptr,_IONBF,0);setvbuf(stderr,nullptr,_IONBF,0);
- fprintf(stdout,"Forgotten Warrior native folder 1.2 (user-supplied game files) starting\n");
+ directory(save_dir);load_presentation_settings();
+#ifdef FW_PS5
+ freopen((save_dir+"/native-game.log").c_str(),"a",stdout);freopen((save_dir+"/native-game.log").c_str(),"a",stderr);
+#endif
+ setvbuf(stdout,nullptr,_IONBF,0);setvbuf(stderr,nullptr,_IONBF,0);
+ fprintf(stdout,"Forgotten Warrior native folder 1.3 (4K, user-supplied game files) starting\n");
  if(test){SDL_setenv("SDL_VIDEODRIVER","dummy",1);SDL_setenv("SDL_AUDIODRIVER","dummy",1);}
  if(SDL_Init(SDL_INIT_VIDEO|SDL_INIT_GAMECONTROLLER|SDL_INIT_AUDIO|SDL_INIT_TIMER)){fprintf(stderr,"SDL: %s\n",SDL_GetError());return 1;}
  SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY,"1");
- SDL_Window*w=SDL_CreateWindow("Forgotten Warrior - Native PS5",SDL_WINDOWPOS_CENTERED,SDL_WINDOWPOS_CENTERED,1920,1080,SDL_WINDOW_SHOWN);
+ SDL_Window*w=SDL_CreateWindow("Forgotten Warrior - Native PS5",SDL_WINDOWPOS_CENTERED,SDL_WINDOWPOS_CENTERED,3840,2160,SDL_WINDOW_SHOWN);
  SDL_Renderer*r=w?SDL_CreateRenderer(w,-1,SDL_RENDERER_SOFTWARE):nullptr;
  if(!r){fprintf(stderr,"Video: %s\n",SDL_GetError());SDL_Quit();return 1;}
  fprintf(stdout,"SDL video=%s audio=%s controllers=%d\n",SDL_GetCurrentVideoDriver(),SDL_GetCurrentAudioDriver(),SDL_NumJoysticks());
  SDL_RenderSetLogicalSize(r,1920,1080);SDL_Texture*texture=SDL_CreateTexture(r,SDL_PIXELFORMAT_RGBA32,SDL_TEXTUREACCESS_STREAMING,480,640);
  SDL_SetTextureScaleMode(texture,SDL_ScaleModeLinear);
- int output_w=0,output_h=0;SDL_GetRendererOutputSize(r,&output_w,&output_h);fprintf(stdout,"Output=%dx%d; game viewport=810x1080; original aspect=3:4; edge-aware 2x + linear scaling\n",output_w,output_h);
+ int output_w=0,output_h=0;SDL_GetRendererOutputSize(r,&output_w,&output_h);fprintf(stdout,"Output=%dx%d; logical viewport=810x1080; 4K viewport=1620x2160; original aspect=3:4; edge-aware 2x + linear scaling\n",output_w,output_h);
  for(int i=0;i<SDL_NumJoysticks();i++)if(SDL_IsGameController(i)){controller=SDL_GameControllerOpen(i);if(controller)break;}
- synth=tsf_load_filename((bundled_dir+"/soundfont.sf2").c_str());if(synth){tsf_set_output(synth,TSF_STEREO_INTERLEAVED,44100,0);SDL_AudioSpec want{},have{};want.freq=44100;want.format=AUDIO_F32SYS;want.channels=2;want.samples=1024;want.callback=audio_callback;audio_device=SDL_OpenAudioDevice(nullptr,0,&want,&have,0);if(audio_device)SDL_PauseAudioDevice(audio_device,0);}
+ synth=tsf_load_filename((bundled_dir+"/soundfont.sf2").c_str());
+ if(synth){tsf_set_output(synth,TSF_STEREO_INTERLEAVED,44100,0);SDL_AudioSpec want{},have{};want.freq=44100;want.format=AUDIO_F32SYS;want.channels=2;want.samples=1024;want.callback=audio_callback;audio_device=SDL_OpenAudioDevice(nullptr,0,&want,&have,0);if(audio_device)SDL_PauseAudioDevice(audio_device,0);}
  if(!assets_given&&!ensure_user_data(r)){fprintf(stdout,"Setup screen closed before game files were added\n");if(audio_device)SDL_CloseAudioDevice(audio_device);SDL_Quit();return 0;}
  fprintf(stdout,"Game files: %s\n",asset_dir.c_str());
  int result=0;
@@ -116,7 +153,7 @@ int main(int argc,char**argv){
   const uint32_t corner[]={0xffffffff,0xffffffff,0,0xffffffff,0,0,0,0,0};std::vector<uint32_t>scaled;enlarge_pixel_art(corner,3,3,3,scaled);if(scaled[14]!=0xffffffff||scaled[15]!=0||scaled[20]!=0||scaled[21]!=0)throw std::runtime_error("Pixel-art edge scaling regression");
   if(pad(SDL_CONTROLLER_BUTTON_A,true)!=-1||pad(SDL_CONTROLLER_BUTTON_A,false)!=-5||pad(SDL_CONTROLLER_BUTTON_X,true)!=-5||pad(SDL_CONTROLLER_BUTTON_START,true)!=-7||pad(SDL_CONTROLLER_BUTTON_B,true)==-7)throw std::runtime_error("Controller mapping regression");
   for(int i=0;i<80;i++)game.tick();SDL_SaveBMP(game.canvas.im.p.get(),"intro.bmp");
-  const int intro_screen=game.screen;game.screen=1;present_frame(r,texture,game);SDL_Surface*title=SDL_CreateRGBSurfaceWithFormat(0,1920,1080,32,SDL_PIXELFORMAT_RGBA32);if(!title||SDL_RenderReadPixels(r,nullptr,SDL_PIXELFORMAT_RGBA32,title->pixels,title->pitch))throw std::runtime_error("Credit capture failed");SDL_SaveBMP(title,"title-credit.bmp");
+  const int intro_screen=game.screen;game.screen=1;present_frame(r,texture,game);SDL_Surface*title=SDL_CreateRGBSurfaceWithFormat(0,output_w,output_h,32,SDL_PIXELFORMAT_RGBA32);if(!title||SDL_RenderReadPixels(r,nullptr,SDL_PIXELFORMAT_RGBA32,title->pixels,title->pitch))throw std::runtime_error("Credit capture failed");SDL_SaveBMP(title,"title-credit.bmp");
   for(int state:{123,2}){game.screen=state;game.ani_step=10;game.menu_mode=1;if(state==2)game.load_img(2);game.paint(game.canvas);present_frame(r,texture,game);if(SDL_RenderReadPixels(r,nullptr,SDL_PIXELFORMAT_RGBA32,title->pixels,title->pitch))throw std::runtime_error("Menu footer capture failed");SDL_SaveBMP(title,("footer-spacing-"+std::to_string(state)+".bmp").c_str());}game.screen=intro_screen;SDL_FreeSurface(title);
   game.screen=-2;for(int page=0;page<5;page++){game.b_step=page;game.paint(game.canvas);SDL_SaveBMP(game.canvas.im.p.get(),("help-ps5-"+std::to_string(page)+".bmp").c_str());}
   game.screen=-3;game.p_mode=0;game.keyPressed(pad(SDL_CONTROLLER_BUTTON_X,false));if(game.screen!=-3)throw std::runtime_error("Square incorrectly exits settings");game.keyPressed(pad(SDL_CONTROLLER_BUTTON_B,false));if(game.screen!=2)throw std::runtime_error("Circle failed to return to main menu");
@@ -129,6 +166,32 @@ int main(int argc,char**argv){
    if(game.screen!=10||game.h_dir!=(dir>0?4:2)||(game.h_x-jump_x)*dir<10)throw std::runtime_error("Held movement interrupted by jump/release");
    apply_held_horizontal(game,0);if(game.h_dir!=0||game.tmp_move!=0)throw std::runtime_error("Horizontal movement continued after release");
   }
+  for(int dir:{-1,1}){
+   game.m_mode=3;game.init_game();for(int i=0;i<25;i++)game.tick();jump_momentum={};game.sn_m[3]=0;game.h_x=dir>0?6:20;
+   apply_held_horizontal(game,dir);game.tick();pressed(game,-1);game.tick();game.keyReleased(-1);
+   apply_held_horizontal(game,0);if(jump_momentum.remaining!=2)throw std::runtime_error("Jump release did not arm momentum");
+   for(int i=0;i<20&&game.h_mo>=6&&game.h_mo<=9;i++){apply_held_horizontal(game,0);game.tick();}
+   const int landed_x=game.h_x;
+   for(int i=0;i<3;i++){apply_held_horizontal(game,0);game.tick();}
+   if((game.h_x-landed_x)*dir!=2||game.h_dir!=0)throw std::runtime_error("Landing coast must stop after two steps");
+   apply_held_horizontal(game,dir);apply_held_horizontal(game,0);if(game.h_dir!=0)throw std::runtime_error("Walking release drifted");
+   game.h_mo=6;apply_held_horizontal(game,dir);apply_held_horizontal(game,0);pressed(game,-6);if(jump_momentum.direction||jump_momentum.remaining)throw std::runtime_error("Pause retained momentum");
+  }
+  fprintf(stdout,"PASS: jump release coast both directions, two-step limit, immediate walking stop and pause reset\n");
+  game.m_mode=3;game.init_game();for(int i=0;i<25;i++)game.tick();game.sn_m[3]=0;game.h_x=6;jump_buffer={};jump_momentum={};
+  pressed(game,-1);
+  for(int i=0;i<20&&!(game.h_dir>=20&&game.h_dir<30&&game.y_gap==0);i++)game.tick();
+  if(!(game.h_dir>=20&&game.h_dir<30&&game.y_gap==0))throw std::runtime_error("Buffered jump landing setup failed");
+  pressed(game,-1);const auto buffered=jump_buffer;game.keyReleased(-1);
+  if(!buffered.until)throw std::runtime_error("Airborne jump was not buffered");
+  game.tick();consume_jump_buffer(game,buffered.until-1);
+  if(jump_buffer.until||game.h_mo!=6||game.h_dir!=10)throw std::runtime_error("Buffered jump did not execute on landing");
+  for(int i=0;i<20;i++)game.tick();if(game.h_mo>=6&&game.h_mo<=9)throw std::runtime_error("Buffered jump repeated without another press");
+  jump_buffer={100,game.stage,game.chap};consume_jump_buffer(game,101);if(jump_buffer.until||game.h_mo>=6)throw std::runtime_error("Expired jump executed");
+  jump_buffer={100,game.stage+1,game.chap};consume_jump_buffer(game,99);if(jump_buffer.until)throw std::runtime_error("Buffer survived stage change");
+  jump_buffer={100,game.stage,game.chap};pressed(game,-6);if(jump_buffer.until)throw std::runtime_error("Buffer survived pause");pressed(game,-6);
+  fprintf(stdout,"PASS: jump buffer on actual landing, key release retention, one-shot execution, expiry, stage and pause cancellation\n");
+
   game.m_mode=3;game.init_game();for(int i=0;i<25;i++)game.tick();
   game.h_hp=game.h_max_hp-50;game.pt[0]=1;const int hp_before=game.h_hp;pressed(game,controller_key(SDL_CONTROLLER_BUTTON_B,true,true));if(game.h_hp<=hp_before||game.pt[0]!=0)throw std::runtime_error("Circle HP potion failed");game.screen=100;game.m_mode=1;pressed(game,controller_key(SDL_CONTROLLER_BUTTON_B,false,true));if(game.screen!=10)throw std::runtime_error("Circle menu back failed");game.m_mode=3;game.init_game();for(int i=0;i<25;i++)game.tick();
   const int pause_x=game.h_x;pressed(game,controller_key(SDL_CONTROLLER_BUTTON_START,true,true));if(game.game_on||game.state!=20)throw std::runtime_error("Touchpad pause failed");for(int i=0;i<5;i++)game.tick();if(game.h_x!=pause_x)throw std::runtime_error("Gameplay advanced while paused");pressed(game,controller_key(SDL_CONTROLLER_BUTTON_START,true,true));if(!game.game_on||game.state!=1)throw std::runtime_error("Touchpad resume failed");
@@ -138,10 +201,42 @@ int main(int argc,char**argv){
   if(game.stage!=1||game.h_max_hp!=130||game.map.length()!=8)throw std::runtime_error("Initial game state mismatch");
   game.paint(game.canvas);SDL_SaveBMP(game.canvas.im.p.get(),"gameplay.bmp");
   present_frame(r,texture,game);
-  if(output_w!=1920||output_h!=1080)throw std::runtime_error("1080p output size mismatch");
-  SDL_Surface*display=SDL_CreateRGBSurfaceWithFormat(0,1920,1080,32,SDL_PIXELFORMAT_RGBA32);
-  if(!display||SDL_RenderReadPixels(r,nullptr,SDL_PIXELFORMAT_RGBA32,display->pixels,display->pitch))throw std::runtime_error("1080p capture failed");
-  SDL_SaveBMP(display,"display-1080p.bmp");SDL_FreeSurface(display);
+  if(output_w!=3840||output_h!=2160)throw std::runtime_error("4K output size mismatch");
+  SDL_Surface*display=SDL_CreateRGBSurfaceWithFormat(0,3840,2160,32,SDL_PIXELFORMAT_RGBA32);
+  if(!display||SDL_RenderReadPixels(r,nullptr,SDL_PIXELFORMAT_RGBA32,display->pixels,display->pitch))throw std::runtime_error("4K capture failed");
+  SDL_SaveBMP(display,"display-4k.bmp");
+  SDL_Surface*plain=SDL_CreateRGBSurfaceWithFormat(0,3840,2160,32,SDL_PIXELFORMAT_RGBA32);
+  SDL_SetRenderDrawColor(r,0,0,0,255);SDL_RenderClear(r);const SDL_Rect unchanged{555,0,810,1080};SDL_RenderCopy(r,texture,nullptr,&unchanged);
+  if(!plain||SDL_RenderReadPixels(r,nullptr,SDL_PIXELFORMAT_RGBA32,plain->pixels,plain->pitch))throw std::runtime_error("Center comparison read failed");
+  for(int y=0;y<2160;y++)if(memcmp((const char*)display->pixels+y*display->pitch+1110*4,(const char*)plain->pixels+y*plain->pitch+1110*4,1620*4))throw std::runtime_error("Ambient background altered center gameplay pixels");
+  SDL_FreeSurface(plain);SDL_FreeSurface(display);fprintf(stdout,"PASS: central 1620x2160 gameplay pixels identical to original rendering\n");
+  const auto defaults=presentation_settings;const int prior_vib=game.vib;
+  game.screen=-3;game.p_mode=3;const int original_speed=game.h_speed;game.keyPressed(-4);
+  if(presentation_settings.ambient!=0||game.h_speed!=original_speed)throw std::runtime_error("Background toggle changed gameplay speed");
+  presentation_settings={1,3,4};load_presentation_settings();if(presentation_settings.ambient!=0)throw std::runtime_error("Display preferences did not persist");
+  present_frame(r,texture,game);Image black_capture=Image::createImage(3840,2160);SDL_RenderReadPixels(r,nullptr,SDL_PIXELFORMAT_RGBA32,black_capture.p->pixels,black_capture.p->pitch);Uint8 cr,cg,cb;SDL_GetRGB(((uint32_t*)black_capture.p->pixels)[1000*3840+100],black_capture.p->format,&cr,&cg,&cb);if(cr||cg||cb)throw std::runtime_error("Black side panels remain visible");
+  game.p_mode=4;for(int i=0;i<8;i++)game.keyPressed(-4);if(presentation_settings.blur!=3)throw std::runtime_error("Blur setting out of bounds");
+  game.p_mode=5;for(int i=0;i<8;i++)game.keyPressed(-3);if(presentation_settings.brightness!=0)throw std::runtime_error("Brightness setting out of bounds");
+  presentation_settings=defaults;save_presentation_settings();game.paint(game.canvas);present_frame(r,texture,game);Image settings_capture=Image::createImage(3840,2160);SDL_RenderReadPixels(r,nullptr,SDL_PIXELFORMAT_RGBA32,settings_capture.p->pixels,settings_capture.p->pitch);SDL_SaveBMP(settings_capture.p.get(),"settings-display.bmp");
+  game.screen=10;game.game_on=true;game.state=1;game.vib=1;game.e_hp[0]=30;auto snapshot=combat_snapshot(game);game.e_hp[0]=29;
+  if(combat_feedback_event(snapshot,game)!=1)throw std::runtime_error("Attack hit feedback missing");
+  game.vib=0;if(combat_feedback_event(snapshot,game)!=0)throw std::runtime_error("Vibration disabled but feedback still enabled");
+  game.vib=1;game.h_hp--;if(combat_feedback_event(snapshot,game)!=2)throw std::runtime_error("Damage feedback missing");game.stage++;if(combat_feedback_event(snapshot,game)!=0)throw std::runtime_error("Stage transition caused feedback");game.stage--;game.h_hp++;game.e_hp[0]=30;game.vib=prior_vib;
+  fprintf(stdout,"PASS: display setting persistence, limits, black panels, speed unchanged, muted and damage/hit feedback routing\n");
+  game.m_mode=3;game.init_game();for(int i=0;i<25;i++)game.tick();
+  game.m_mode=3;game.init_game();for(int i=0;i<25;i++)game.tick();
+  const int normal_gold=game.gold;pressed(game,99);
+  if(game.screen!=10||!game.game_on||game.gold!=normal_gold)throw std::runtime_error("Removed shortcut still changes gameplay");
+  game.god=0;const int normal_hp=game.h_hp;game.dec_hp(0);if(game.h_hp>=normal_hp)throw std::runtime_error("Normal damage missing");
+  game.h_hp=game.h_max_hp-50;game.god=0;game.h_mo=0;game.h_dir=0;game.pt[0]=1;pressed(game,55);
+  if(game.pt[0]!=0||game.h_hp<=game.h_max_hp-50)throw std::runtime_error("Normal potion consumption failed");
+  const int potion_hp=game.h_hp;pressed(game,55);if(game.h_hp!=potion_hp||game.pt[0]!=0)throw std::runtime_error("Empty potion inventory still usable");
+  game.screen=-3;game.p_mode=0;pressed(game,-1);if(game.p_mode!=5)throw std::runtime_error("Settings upper wrap failed");
+  pressed(game,-2);if(game.p_mode!=0)throw std::runtime_error("Settings lower wrap failed");
+  for(int row=0;row<6;row++){game.p_mode=row;pressed(game,-5);if(game.screen!=-3)throw std::runtime_error("Unexpected extra settings entry");}
+  game.paint(game.canvas);present_frame(r,texture,game);Image settings_clean=Image::createImage(3840,2160);SDL_RenderReadPixels(r,nullptr,SDL_PIXELFORMAT_RGBA32,settings_clean.p->pixels,settings_clean.p->pitch);SDL_SaveBMP(settings_clean.p.get(),"settings-clean.bmp");
+  game.m_mode=3;game.init_game();for(int i=0;i<25;i++)game.tick();
+  fprintf(stdout,"PASS: six settings only, removed shortcut inactive, normal damage and finite potion inventory\n");
   const int initial_x=game.h_x;game.keyPressed(-4);for(int i=0;i<5;i++)game.tick();game.keyReleased(-4);
   if(game.h_x<=initial_x)throw std::runtime_error("Right input did not move hero");
   game.keyPressed(-5);for(int i=0;i<20;i++)game.tick();game.keyReleased(-5);
@@ -153,6 +248,7 @@ int main(int argc,char**argv){
   while(SDL_GetTicks64()-started<1000){if(SDL_GetTicks64()>=due){game.tick();updates++;due=SDL_GetTicks64()+frame_delay(game);}SDL_Delay(1);}
   if(updates<15||updates>20||game.screen!=10)throw std::runtime_error("Normal-speed real-time cadence regression");
   fprintf(stdout,"PASS: intro, gameplay, movement, combat update, save roundtrip, 63 stage/chapter renders; normal cadence %d updates/second (legacy saved delay=23ms)\n",updates);
+
  }else{
   Uint64 next=0;int axis_x=0,axis_y=0,last_screen=-99999;bool options_was_down=false;
   while(!quitting){bool options_event=false;SDL_Event e;while(SDL_PollEvent(&e)){
@@ -167,7 +263,7 @@ int main(int argc,char**argv){
    else if(e.type==SDL_WINDOWEVENT&&e.window.event==SDL_WINDOWEVENT_FOCUS_GAINED)game.showNotify();
    else if(e.type==SDL_CONTROLLERAXISMOTION&&(e.caxis.axis==SDL_CONTROLLER_AXIS_LEFTX||e.caxis.axis==SDL_CONTROLLER_AXIS_LEFTY)){
     int value=e.caxis.value<-16000?-1:e.caxis.value>16000?1:0;int&old=e.caxis.axis==SDL_CONTROLLER_AXIS_LEFTX?axis_x:axis_y;
-    if(value!=old){if(old)game.keyReleased(e.caxis.axis==SDL_CONTROLLER_AXIS_LEFTX?(old<0?-3:-4):(old<0?-1:-2));if(value)game.keyPressed(e.caxis.axis==SDL_CONTROLLER_AXIS_LEFTX?(value<0?-3:-4):(value<0?-1:-2));old=value;}
+    if(value!=old){if(old)game.keyReleased(e.caxis.axis==SDL_CONTROLLER_AXIS_LEFTX?(old<0?-3:-4):(old<0?-1:-2));if(value)pressed(game,e.caxis.axis==SDL_CONTROLLER_AXIS_LEFTX?(value<0?-3:-4):(value<0?-1:-2));old=value;}
    }
   }
   bool options_down=controller&&SDL_GameControllerGetButton(controller,SDL_CONTROLLER_BUTTON_START);
@@ -176,7 +272,7 @@ int main(int argc,char**argv){
 #endif
   if(options_down&&!options_was_down&&!options_event)pressed(game,-7);
   options_was_down=options_down;
-  Uint64 now=SDL_GetTicks64();if(now>=next){apply_held_horizontal(game,held_horizontal());game.tick();next=SDL_GetTicks64()+frame_delay(game);}
+  Uint64 now=SDL_GetTicks64();if(now>=next){apply_held_horizontal(game,held_horizontal());tick_with_buffer(game);next=SDL_GetTicks64()+frame_delay(game);}
   present_frame(r,texture,game);SDL_Delay(4);
   if(last_screen!=game.screen){last_screen=game.screen;fprintf(stdout,"Screen=%d chapter=%d stage=%d\n",game.screen,game.chap,game.stage);
 #ifdef FW_PS5

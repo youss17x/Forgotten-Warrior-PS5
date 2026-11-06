@@ -121,7 +121,7 @@ inline void draw_setup_screen(SDL_Renderer*r,int missing,const std::string&first
     g.setColor(0xff8080);g.drawString(String("Missing files: "+std::to_string(missing)+" of "+std::to_string((int)(sizeof(original_game_files)/sizeof(*original_game_files)))+"  (first: "+first+")"),40,y+14,0);
     SDL_Texture*t=SDL_CreateTextureFromSurface(r,canvas.p.get());
     SDL_SetRenderDrawColor(r,0,0,0,255);SDL_RenderClear(r);
-    if(t){SDL_Rect dst{0,0,1920,1080};SDL_RenderCopy(r,t,nullptr,&dst);SDL_DestroyTexture(t);}
+    if(t){SDL_RenderCopy(r,t,nullptr,nullptr);SDL_DestroyTexture(t);}
     SDL_RenderPresent(r);
 }
 

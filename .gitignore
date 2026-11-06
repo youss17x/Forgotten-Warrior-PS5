@@ -11,3 +11,4 @@ downloads/
 *.bak
 *.mappp
 FWRG00001-v*.zip
+build-cache/

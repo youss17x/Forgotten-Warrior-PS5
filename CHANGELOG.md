@@ -1,3 +1,14 @@
+# Version 1.3.0
+
+- 4K (3840 × 2160) output through a modified SDL PS5 video driver.
+- Optional ambient side panels from the scenery, with blur and brightness settings; the central gameplay pixels are unchanged.
+- Options menu: sound, vibration, game speed, side panels, blur and brightness.
+- Jumping: short landing glide in the jump direction and a 120 ms jump buffer.
+- Vibration feedback on hits and damage, with lighter rumble.
+- New cover icon.
+- Still ships no original game files; the game reads them from the user's own copy.
+- `build-title.py` also runs on Linux and builds the modified SDL video driver.
+
 # Version 1.2.0
 
 - The release no longer contains any original game files (artwork, maps, audio).

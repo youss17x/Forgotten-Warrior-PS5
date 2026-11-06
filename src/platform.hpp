@@ -126,4 +126,4 @@ inline void audio_callback(void*,Uint8*stream,int bytes){
 }
 inline void play_midi(int n){if(!audio_device||!synth)return;static const int ids[]={0,1,3,4,5,6,7};if(n<0||n>6)return;SDL_LockAudioDevice(audio_device);tsf_reset(synth);if(midi)tml_free(midi);midi=tml_load_filename((asset_dir+"/"+std::to_string(ids[n])+".mid").c_str());next_midi=midi;midi_ms=0;SDL_UnlockAudioDevice(audio_device);}
 struct AudioClip{bool operator!=(std::nullptr_t)const{return true;}AudioClip&operator=(std::nullptr_t){return *this;}void stop(){if(audio_device){SDL_LockAudioDevice(audio_device);next_midi=nullptr;if(synth)tsf_reset(synth);SDL_UnlockAudioDevice(audio_device);}}};
-inline void rumble(int ms){if(controller)SDL_GameControllerRumble(controller,16000,24000,(Uint32)ms);}
+inline void rumble(int ms){if(controller)SDL_GameControllerRumble(controller,6000,4000,(Uint32)ms);}
