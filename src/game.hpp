@@ -1,9 +1,11 @@
 #pragma once
 #include "platform.hpp"
 #include "controller_help.hpp"
+#include "presentation_settings.hpp"
 class GameScreen {
 public:
     Graphics canvas;
+
     void repaint() { paint(canvas); }
     void serviceRepaints() {}
     void setFullScreenMode(bool) {}
@@ -620,6 +622,7 @@ public:
     }
 
     void make_map(int n, int n2) {
+
         
         String string = nullptr;
         string = this->stage > 100 ? String::valueOf(this->stage) : (this->chap == 2 && (this->stage - 1) / 3 == 1 ? this->stage + 9 + String("[0]") : (this->chap == 2 && (this->stage - 1) / 3 == 3 ? this->stage - 3 + String("[0]") : (this->chap == 2 && (this->stage - 1) / 3 == 4 ? this->stage - 3 + String("[1]") : (this->chap == 2 && (this->stage - 1) / 3 == 6 ? this->stage - 3 + String("[1]") : this->stage + String("[") + this->chap + String("]")))));
@@ -1841,38 +1844,8 @@ public:
             this->draw_img(String("ch"), 231, 213, 24);
         } else if (this->screen == -3) {
             this->draw_mback(graphics);
-            graphics.drawImage(this->imgM_menu, 39, 102, 20);
-            if (this->vol == 0) {
-                graphics.drawImage(this->imgOff, 137, 122, 20);
-            } else {
-                graphics.drawImage(this->imgOn, 98, 122, 20);
-            }
-            if (this->vib == 1) {
-                graphics.drawImage(this->imgOn, 98, 168, 20);
-            }
-            if (this->vib == 0) {
-                graphics.drawImage(this->imgOff, 137, 168, 20);
-            }
-            int n = 0;
-            while (n < this->h_speed) {
-                graphics.setColor(15537243);
-                graphics.fillRect(n * 7 + 126, 197, 4, 8);
-                graphics.setColor(16754374);
-                graphics.fillRect(n * 7 + 126, 197, 3, 6);
-                ++n;
-            }
-            if (this->h_speed == 1) {
-                this->game_speed = 85;
-            } else if (this->h_speed == 2) {
-                this->game_speed = 67;
-            } else if (this->h_speed == 3) {
-                this->game_speed = 55;
-            } else if (this->h_speed == 4) {
-                this->game_speed = 41;
-            } else if (this->h_speed == 5) {
-                this->game_speed = 27;
-            }
-            graphics.drawImage(this->imgCheck, 19, this->p_mode * 46 + 108, 6);
+            static const int delays[]={85,67,55,41,27};this->game_speed=delays[std::clamp(this->h_speed,1,5)-1];
+            draw_presentation_settings(graphics,this->p_mode,this->vol,this->vib,this->h_speed);
         } else if (this->screen == -4) {
             this->draw_mback(graphics);
             try {
@@ -2362,6 +2335,7 @@ public:
                                 this->h_mo = 0;
                             }
                             this->check_item(this->h_x, this->h_y, 0);
+                            if(screen==-6)return;
                             ++this->h_x;
                         }
                     } else if (this->h_dir == 2) {
@@ -2377,6 +2351,7 @@ public:
                                 this->h_mo = 2;
                             }
                             this->check_item(this->h_x, this->h_y, 0);
+                            if(screen==-6)return;
                             --this->h_x;
                         }
                     } else if (this->h_dir == 6) {
@@ -2813,6 +2788,7 @@ public:
     }
 
     void keyPressed(int n) {
+        if(screen==-6){if(n==-5||n==-8){goto_menu();repaint();}return;}
         if (this->screen == 10 && this->auto_move == 0) {
             if (this->state == 1 && this->h_dem != 99 && this->p_mode == 2) {
                 if (!(n != -1 && n != 50 || this->h_mo >= 3 && this->h_mo != 10)) {
@@ -3390,9 +3366,9 @@ public:
             }
             if (this->screen == -3) {
                 if (n == -1) {
-                    this->p_mode = this->p_mode == 0 ? 2 : --this->p_mode;
+                    this->p_mode = this->p_mode <= 0 || this->p_mode > 5 ? 5 : this->p_mode-1;
                 } else if (n == -2) {
-                    this->p_mode = this->p_mode == 2 ? 0 : ++this->p_mode;
+                    this->p_mode = this->p_mode >= 5 ? 0 : this->p_mode+1;
                 }
                 if (this->p_mode == 0) {
                     if (n == -3) {
@@ -3412,6 +3388,8 @@ public:
                         this->vib = 0;
                     }
                 }
+                if(this->p_mode>=3&&this->p_mode<=5&&(n==-3||n==-4))change_presentation_setting(this->p_mode,n==-3?-1:1);
+                if(this->p_mode==1&&n==-4&&controller)SDL_GameControllerRumble(controller,0,0,0);
                 if (this->p_mode == 2) {
                     if (n == -3 && this->h_speed != 1) {
                         --this->h_speed;
@@ -3468,7 +3446,7 @@ public:
     }
 
     void call_vib(int n) {
-        if(vib==1) rumble(n);
+        if(vib==1) rumble(std::min(n,90));
     }
 
     void showshow(int n) {

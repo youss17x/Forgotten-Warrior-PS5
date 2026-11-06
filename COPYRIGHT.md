@@ -13,6 +13,7 @@ This grant covers the original PS5 integration and enhancements in:
 - `src/controller_help.hpp`: controller glyphs and help presentation.
 - `src/pixel_scaler.hpp`: pixel scaling implementation.
 - `src/credit_design.hpp`: credit presentation code.
+- `src/presentation_settings.hpp`, `src/side_background.hpp` and `src/combat_feedback.hpp`: display options, ambient side panels and vibration feedback.
 - `src/user_data.hpp`: loading the original game files from the user's own copy, `.jar` extraction and the setup screen.
 - `src/asset_manifest.hpp`: the list of file names the game expects (names only, no game content).
 - `native_shims.cpp` and `build-title.py`: original integration and build contributions.
