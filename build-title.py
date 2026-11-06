@@ -56,7 +56,7 @@ for source in [vendor/'app_crt.cpp',src/'main.cpp',base/'vendor/ps5_compat.cpp',
  out=base/'obj'/(source.stem+'.o');objects.append(out);run(common+['-c',source,'-o',out])
 # Modified SDL PS5 video driver (4K output); overrides the one in libSDL2.a.
 sdl=sdl_source();video=base/'obj/SDL_ps5video.o'
-run([cc,'--no-default-config','--target=x86_64-sie-ps5','-O2','-fno-stack-protector','-fno-plt','-ffunction-sections','-fdata-sections','-isysroot',sdk,'-isystem',sdk/'target/include','-I'+str(hb/'include/SDL2'),'-I'+str(sdl/'src'),'-c',base/'vendor/sdl-ps5video/SDL_ps5video.c','-o',video])
+run([cc,'--no-default-config','--target=x86_64-sie-ps5','-O2','-fno-stack-protector','-fno-plt','-ffunction-sections','-fdata-sections','-isysroot',sdk,'-isystem',sdk/'target/include','-I'+str(hb/'include/SDL2'),'-I'+str(sdl/'src/video/ps5'),'-I'+str(sdl/'src'),'-I'+str(sdl/'include'),'-c',base/'vendor/sdl-ps5video/SDL_ps5video.c','-o',video])
 objects.append(video)
 wrap='sceKeyboardInit sceKeyboardOpen sceKeyboardReadState sceKeyboardClose sceImeDialogGetStatus malloc free calloc realloc posix_memalign'.split()
 pie=base/'llvm-pie.elf'
